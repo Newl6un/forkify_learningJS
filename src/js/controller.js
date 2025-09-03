@@ -4,14 +4,6 @@ import recipeView from './views/recipeView.js';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
-const timeout = function (s) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-};
-
 // NEW API URL (instead of the one shown in the video)
 // https://forkify-api.jonas.io
 // //https://forkify-api.herokuapp.com/api/v2/key
@@ -39,10 +31,8 @@ const recipeController = async function () {
     //Get api key
     await model.loadApiKey();
 
-    if (!model.state.apiKey) throw new Error('Cannot get api key.');
-
     //Loading recipe
-    await model.loadRecipe(id, model.state.apiKey);
+    await model.loadRecipe(id, model.state);
 
     //Render recipe
     recipeView.render(model.state.recipe);

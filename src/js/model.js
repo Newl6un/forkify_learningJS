@@ -1,21 +1,17 @@
-import { async } from 'regenerator-runtime';
+import { API_KEY, API_URL, API_KEY_URL } from './config.js';
+import { getJSON } from './helpers.js';
 
-const API_KEY = 'apiKey';
 export const state = {
   recipe: {},
   search: {},
   apiKey: '',
 };
 
-export const loadRecipe = async function (id, apiKey) {
+export const loadRecipe = async function (id) {
   try {
-    const res = await fetch(
-      `https://forkify-api.jonas.io/api/v2/recipes/${id}?key=${apiKey}`
-    );
+    if (!state.apiKey) throw new Error('Api key required.');
 
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    const data = await getJSON(`${API_URL}/${id}?key=${state.apiKey}`);
 
     const { recipe } = data.data;
 
@@ -31,15 +27,13 @@ export const loadRecipe = async function (id, apiKey) {
     };
   } catch (error) {
     console.log('Fail when load recipe: ', error);
+    throw error;
   }
 };
 
 const _getApiKeyFromApi = async function () {
   try {
-    const res = await fetch('https://forkify-api.herokuapp.com/api/v2/key');
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    const data = await getJSON(API_KEY_URL);
 
     const { key } = data.data;
 
@@ -47,6 +41,7 @@ const _getApiKeyFromApi = async function () {
   } catch (error) {
     console.log('Failed when get api key: ', error);
     state.apiKey = '';
+    throw error;
   } finally {
     localStorage.setItem(API_KEY, state.apiKey);
   }
