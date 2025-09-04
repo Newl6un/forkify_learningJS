@@ -6,13 +6,17 @@ export default class View {
   _errorMessage;
   _data;
 
-  render(data) {
+  render(data, render = true) {
     if (!data || (Array.isArray(data) && data.length === 0)) {
       return this.renderError();
     }
 
     this._data = data;
     const html = this._generateMarkup();
+
+    if (!render) {
+      return html;
+    }
 
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', html);
