@@ -14,7 +14,7 @@
   "author": "NewlSun",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel index.html"
+    "build": "parcel build index.html --dist-dir dist --public-url ./ --no-optimize "
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.15.4",
