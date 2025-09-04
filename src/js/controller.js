@@ -1,5 +1,8 @@
 import * as model from './model.js';
 import recipeView from './views/recipeView.js';
+import searchView from './views/searchView.js';
+import resultsView from './views/resultsView.js';
+import paginationView from './views/paginationView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -19,6 +22,10 @@ import 'regenerator-runtime/runtime';
 // // }
 ///////////////////////////////////////
 
+if (module.hot) {
+  module.hot.accept();
+}
+
 const recipeController = async function () {
   try {
     //Get id from hash
@@ -28,19 +35,56 @@ const recipeController = async function () {
 
     recipeView.renderSpinner();
 
-    //Get api key
-    await model.loadApiKey();
-
     //Loading recipe
     await model.loadRecipe(id, model.state);
 
     //Render recipe
     recipeView.render(model.state.recipe);
   } catch (err) {
-    console.log('Error fetching recipe: ', err);
+    console.error('Error fetching recipe: ', err);
+    recipeView.renderMessage();
   }
 };
 
-['hashchange', 'load'].forEach(ev =>
-  window.addEventListener(ev, recipeController)
-);
+const searchController = async function () {
+  try {
+    resultsView.renderSpinner();
+    //1. Get search query
+    const query = searchView.getQuery();
+
+    if (!query) {
+      return;
+    }
+
+    //2. Load search results
+    await model.loadSearchResults(query);
+
+    //3. Render results
+    resultsView.render(model.getSearchResulsPage(1));
+
+    //4. Render initial pagination button
+    paginationView.render(model.state.search);
+  } catch (err) {
+    console.error('Error search recipe: ', err);
+    resultsView.renderError();
+  }
+};
+
+const paginationController = function (gotoPage) {
+  //3. Render results
+  resultsView.render(model.getSearchResulsPage(gotoPage));
+
+  //4. Render initial pagination button
+  paginationView.render(model.state.search);
+};
+
+const init = async function () {
+  //Get api key
+  await model.loadApiKey();
+
+  recipeView.addHandlerRender(recipeController);
+  searchView.addHandlerSearch(searchController);
+  paginationView.addHandlerClick(paginationController);
+};
+
+init();

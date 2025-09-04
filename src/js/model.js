@@ -1,9 +1,14 @@
-import { API_KEY, API_URL, API_KEY_URL } from './config.js';
+import { API_KEY, API_URL, API_KEY_URL, RES_PER_PAGE } from './config.js';
 import { getJSON } from './helpers.js';
 
 export const state = {
   recipe: {},
-  search: {},
+  search: {
+    query: '',
+    results: [],
+    resultPerPage: RES_PER_PAGE,
+    page: 1,
+  },
   apiKey: '',
 };
 
@@ -26,7 +31,7 @@ export const loadRecipe = async function (id) {
       ingredients: recipe.ingredients,
     };
   } catch (error) {
-    console.log('Fail when load recipe: ', error);
+    console.error('Fail when load recipe: ', error);
     throw error;
   }
 };
@@ -39,7 +44,7 @@ const _getApiKeyFromApi = async function () {
 
     state.apiKey = key;
   } catch (error) {
-    console.log('Failed when get api key: ', error);
+    console.error('Failed when get api key: ', error);
     state.apiKey = '';
     throw error;
   } finally {
@@ -56,4 +61,37 @@ export const loadApiKey = async function (reload = false) {
   }
 
   await _getApiKeyFromApi();
+};
+
+export const loadSearchResults = async function (query) {
+  try {
+    if (!state.apiKey) throw new Error('Api key required.');
+
+    const data = await getJSON(
+      `${API_URL}?search=${query}&key=${state.apiKey}`
+    );
+
+    state.search.query = query;
+
+    state.search.results = data.data.recipes.map(rec => {
+      return {
+        id: rec.id,
+        title: rec.title,
+        publisher: rec.publisher,
+        image: rec.image_url,
+      };
+    });
+  } catch (error) {
+    console.error('Failed when search: ', error);
+    throw error;
+  }
+};
+
+export const getSearchResulsPage = function (page = 1) {
+  state.search.page = page;
+  const resultPerPage = state.search.resultPerPage;
+  const start = (page - 1) * resultPerPage;
+  const end = page * resultPerPage;
+
+  return state.search.results.slice(start, end);
 };
