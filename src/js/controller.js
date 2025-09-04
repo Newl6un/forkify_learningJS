@@ -92,23 +92,26 @@ const servingsController = function (newServings) {
 };
 
 const bookmarkController = function () {
-  // Add/Remove bookmark
-  if (!model.state.recipe.bookmarked) {
-    model.addBookmark(model.state.recipe);
-  } else {
-    model.deleteBookmark(model.state.recipe.id);
-  }
+  if (model.state.recipe && Object.keys(model.state.recipe).length !== 0) {
+    // Add/Remove bookmark
+    if (!model.state.recipe.bookmarked) {
+      model.addBookmark(model.state.recipe);
+    } else {
+      model.deleteBookmark(model.state.recipe.id);
+    }
 
-  //Update recipe view
-  recipeView.update(model.state.recipe);
+    //Update recipe view
+    recipeView.update(model.state.recipe);
+  }
 
   bookmarksView.render(Array.from(model.state.bookmarks.values()));
 };
 
 const init = async function () {
-  //Get api key
-  await model.loadApiKey();
-
+  // if (location.hash) {
+  //   history.replaceState(null, '', location.pathname + location.search);
+  // }
+  bookmarksView.addHandlerRender(bookmarkController);
   recipeView.addHandlerRender(recipeController);
   recipeView.addHandlerUpdateServings(servingsController);
   recipeView.addHandlerAddBookmark(bookmarkController);

@@ -10,6 +10,10 @@ class BookmarksView extends View {
     this._message = '';
   }
 
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
+
   _generateMarkup() {
     return this._data
       .map(bookmark => previewView.render(bookmark, false))

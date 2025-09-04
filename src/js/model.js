@@ -1,4 +1,10 @@
-import { API_KEY, API_URL, API_KEY_URL, RES_PER_PAGE } from './config.js';
+import {
+  API_KEY,
+  API_URL,
+  API_KEY_URL,
+  RES_PER_PAGE,
+  BOOK_MARKS,
+} from './config.js';
 import { getJSON } from './helpers.js';
 
 export const state = {
@@ -110,6 +116,10 @@ export const updateServings = function (newServings) {
   state.recipe.servings = newServings;
 };
 
+const persistBookmarks = function () {
+  localStorage.setItem(BOOK_MARKS, JSON.stringify(Array.from(state.bookmarks)));
+};
+
 export const addBookmark = function (recipe) {
   if (state.bookmarks.has(recipe.id)) {
     return;
@@ -120,6 +130,7 @@ export const addBookmark = function (recipe) {
   if (recipe.id === state.recipe.id) {
     state.recipe.bookmarked = true;
   }
+  persistBookmarks();
 };
 
 export const deleteBookmark = function (id) {
@@ -128,4 +139,29 @@ export const deleteBookmark = function (id) {
   if (id === state.recipe.id) {
     state.recipe.bookmarked = false;
   }
+  persistBookmarks();
+};
+
+export const loadBookMark = function () {
+  const storage = localStorage.getItem(BOOK_MARKS);
+  if (storage) {
+    const bookmarks = JSON.parse(storage);
+
+    if (!Array.isArray(bookmarks)) {
+      return;
+    }
+    state.bookmarks = new Map(bookmarks);
+  }
+};
+
+const init = async function () {
+  await loadApiKey();
+  loadBookMark();
+};
+
+init();
+
+//For test
+const clearBookmarks = function () {
+  localStorage.clear(BOOK_MARKS);
 };
