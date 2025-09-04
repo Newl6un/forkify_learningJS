@@ -10,6 +10,7 @@ export const state = {
     page: 1,
   },
   apiKey: '',
+  bookmarks: new Map(),
 };
 
 export const loadRecipe = async function (id) {
@@ -29,6 +30,7 @@ export const loadRecipe = async function (id) {
       servings: recipe.servings,
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
+      bookmarked: state.bookmarks.has(recipe.id),
     };
   } catch (error) {
     console.error('Fail when load recipe: ', error);
@@ -81,13 +83,15 @@ export const loadSearchResults = async function (query) {
         image: rec.image_url,
       };
     });
+
+    state.search.page = 1;
   } catch (error) {
     console.error('Failed when search: ', error);
     throw error;
   }
 };
 
-export const getSearchResulsPage = function (page = 1) {
+export const getSearchResulsPage = function (page = state.search.page) {
   state.search.page = page;
   const resultPerPage = state.search.resultPerPage;
   const start = (page - 1) * resultPerPage;
@@ -104,4 +108,24 @@ export const updateServings = function (newServings) {
   });
 
   state.recipe.servings = newServings;
+};
+
+export const addBookmark = function (recipe) {
+  if (state.bookmarks.has(recipe.id)) {
+    return;
+  }
+  state.bookmarks.set(recipe.id, recipe);
+
+  //Mark current recipe as bookmarks
+  if (recipe.id === state.recipe.id) {
+    state.recipe.bookmarked = true;
+  }
+};
+
+export const deleteBookmark = function (id) {
+  state.bookmarks.delete(id);
+
+  if (id === state.recipe.id) {
+    state.recipe.bookmarked = false;
+  }
 };
