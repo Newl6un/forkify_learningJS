@@ -4,3 +4,4 @@ export const API_KEY = 'apiKey';
 export const TIMEOUT_SEC = 45;
 export const RES_PER_PAGE = 10;
 export const BOOK_MARKS = 'bookmarks';
+export const MODAL_CLOSE_SEC = 2.5;

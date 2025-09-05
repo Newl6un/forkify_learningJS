@@ -1,9 +1,11 @@
 import * as model from './model.js';
+import { MODAL_CLOSE_SEC } from './config.js';
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';
 import bookmarksView from './views/bookmarksView.js';
+import addRecipeView from './views/addRecipeView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -38,7 +40,8 @@ const recipeController = async function () {
 
     //Update results view to mark selected search result
     resultsView.update(model.getSearchResulsPage());
-    bookmarksView.update(Array.from(model.state.bookmarks.values()));
+
+    bookmarksView.update(Object.values(model.state.bookmarks));
 
     //Loading recipe
     await model.loadRecipe(id, model.state);
@@ -104,7 +107,35 @@ const bookmarkController = function () {
     recipeView.update(model.state.recipe);
   }
 
-  bookmarksView.render(Array.from(model.state.bookmarks.values()));
+  bookmarksView.render(Object.values(model.state.bookmarks));
+};
+
+const addRecipeController = async function (newRecipe) {
+  try {
+    //Show loading spinner
+    addRecipeView.renderSpinner();
+
+    await model.uploadRecipe(newRecipe);
+
+    //Render recipe
+    recipeView.render(model.state.recipe);
+
+    //Success message
+    addRecipeView.renderMessage();
+
+    //Render bookmark view
+    bookmarksView.update(Object.values(model.state.bookmarks));
+
+    //Change ID in URL
+    window.history.pushState(null, '', `#${model.state.recipe.id}`);
+
+    setTimeout(() => {
+      addRecipeView.toggleWindow();
+    }, MODAL_CLOSE_SEC * 1000);
+  } catch (error) {
+    console.error('Error addRecipe: ', error);
+    addRecipeView.renderError();
+  }
 };
 
 const init = async function () {
@@ -117,6 +148,7 @@ const init = async function () {
   recipeView.addHandlerAddBookmark(bookmarkController);
   searchView.addHandlerSearch(searchController);
   paginationView.addHandlerClick(paginationController);
+  addRecipeView.addHandlerUpload(addRecipeController);
 };
 
 init();
